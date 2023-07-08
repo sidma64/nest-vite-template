@@ -1,28 +1,28 @@
-import useSWR from 'swr';
+import {
+    QueryClient,
+    QueryClientProvider,
+    useQuery,
+} from '@tanstack/react-query';
 
-class API {
-    url: string;
-    constructor(url: string) {
-        this.url = url;
-    }
-    async get() {
-        const response = await fetch(this.url);
-        const data = await response.json();
-        return data;
-    }
+const queryClient = new QueryClient();
 
-    use(path: string) {
-        return useSWR(path, this.get);
-    }
-}
+const Example: React.FC = () => {
+    const { isLoading, error, data } = useQuery({
+        queryKey: ['index'],
+        queryFn: () => fetch('/api').then((res) => res.json()),
+    });
 
-const api = new API('http://localhost:3000');
+    console.log(data);
 
-function App() {
-    const { data, error, isLoading } = api.use('/');
-    if (isLoading) return <h1>Loading...</h1>;
-    if (error) return <h1>{`Error: ${error}`}</h1>;
-    return <h1>{data}</h1>;
-}
+    if (isLoading) return <div>Loading...</div>;
+    if (error) return <div>Error: {JSON.stringify(error)}</div>;
+    return <h1>Data: {JSON.stringify(data)}</h1>;
+};
+
+const App: React.FC = () => (
+    <QueryClientProvider client={queryClient}>
+        <Example />
+    </QueryClientProvider>
+);
 
 export default App;
